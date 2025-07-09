@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Payment QR Code Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      text-align: center;
+      padding: 40px;
+    }
+
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin: 10px;
+      width: 250px;
+    }
+
+    #qrcode {
+      margin-top: 30px;
+    }
+
+    canvas {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>UPI Payment QR Code</h2>
+
+  <input type="text" id="upiId" value="9029507739@upi" readonly />
+  <input type="number" id="amount" placeholder="Amount" readonly />
+  <input type="text" id="note" placeholder="Enter Note (optional)" />
+  <br>
+
+  <div id="qrcode"></div><br><br>
+  <a href="feedback.html" class="checkout-btn">Feedback/Suggestion</a><br><br><br><br>
+  <a href="website.php">Home</a>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const amountField = document.getElementById("amount");
+    const noteField = document.getElementById("note");
+    const qrCodeDiv = document.getElementById("qrcode");
+
+    // Load total from localStorage
+    const storedAmount = localStorage.getItem("grand_total");
+    if (!storedAmount || parseFloat(storedAmount) <= 0) {
+      qrCodeDiv.innerHTML = "<p style='color:red'>Cart is empty or amount not set.</p>";
+      return;
+    }
+
+    amountField.value = storedAmount;
+
+    function generateQR() {
+      const upiId = document.getElementById("upiId").value;
+      const amount = amountField.value.trim();
+      const note = noteField.value.trim();
+
+      const upiURL = `upi://pay?pa=${upiId}&pn=LeatherShop&am=${amount}&tn=${encodeURIComponent(note)}&cu=INR`;
+
+      qrCodeDiv.innerHTML = ""; // Clear any existing QR
+
+      QRCode.toCanvas(upiURL, { width: 300 }, function (err, canvas) {
+        if (err) {
+          qrCodeDiv.innerHTML = "<p style='color:red'>Error generating QR code</p>";
+          console.error(err);
+        } else {
+          qrCodeDiv.appendChild(canvas);
+          setTimeout(() => {
+            const confirmed = confirm("Have you completed the payment?");
+            if (confirmed) {
+              alert("Thank you! Your payment will be verified shortly.");
+              // Optionally redirect or clear cart
+            }
+          }, 2000);
+        }
+      });
+    }
+
+    // Generate QR on load
+    generateQR();
+  });
+</script>
+</body>
+</html>
